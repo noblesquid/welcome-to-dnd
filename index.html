@@ -291,6 +291,7 @@ button{font-family:inherit}
 <audio id="ping-sfx" src="sound/ping-sfx.mp3" preload="auto"></audio>
 <audio id="thunder-sfx" src="sound/thunder-sfx.mp3" preload="auto"></audio>
 <audio id="steps-sfx" src="sound/steps-sfx.mp3" preload="auto"></audio>
+<audio id="eerie" src="sound/eerie.mp3" preload="auto"></audio>
 
 <div id="inv-overlay" class="overlay" style="display:none;">
   <div id="scene" class="scene" role="dialog" aria-modal="true" aria-label="Dungeons &amp; Dragons Invitation">
@@ -333,6 +334,7 @@ button{font-family:inherit}
   const pingSfx = document.getElementById("ping-sfx");
   const thunderSfx = document.getElementById("thunder-sfx");
   const stepsSfx = document.getElementById("steps-sfx");
+  const eerieSfx = document.getElementById("eerie");
 
   bgm.volume = 0.60;
   knockSfx.volume = 0.40;
@@ -340,7 +342,7 @@ button{font-family:inherit}
   pingSfx.volume = 0.15;
   thunderSfx.volume = 0.60;
   stepsSfx.volume = 0.2;
-
+  eerieSfx.volume = 0.15;
   // Disable looping on footsteps sound
   stepsSfx.loop = false;
 
@@ -660,8 +662,8 @@ button{font-family:inherit}
 
   btnNo.addEventListener('click', (e) => {
     e.stopPropagation();
-    pingSfx.currentTime = 0;
-    pingSfx.play().catch(() => {});
+    eerieSfx.currentTime = 0;
+    eerieSfx.play().catch(() => {});
     thunderSfx.currentTime = 0;
     thunderSfx.play().catch(() => {});
     hideChoices();
@@ -673,7 +675,7 @@ button{font-family:inherit}
       48
     );
     scene = 5;
-  });
+});
 
   // Overlay click advances scene except buttons
   overlay.addEventListener('click', (e) => {
@@ -725,12 +727,3 @@ button{font-family:inherit}
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
