@@ -291,7 +291,7 @@ button{font-family:inherit}
 <audio id="paper-sfx" src="sound/ping-sfx.mp3" preload="auto"></audio>
 <audio id="ping-sfx" src="sound/ping-sfx.mp3" preload="auto"></audio>
 <audio id="thunder-sfx" src="sound/thunder-sfx.mp3" preload="auto"></audio>
-<audio id="steps-sfx" src="sound/steps-sfx.mp3" loop preload="auto"></audio>
+<audio id="steps-sfx" src="sound/steps-sfx.mp3" preload="auto"></audio>
 
 <div id="inv-overlay" class="overlay" style="display:none;">
   <div id="scene" class="scene" role="dialog" aria-modal="true" aria-label="Dungeons &amp; Dragons Invitation">
@@ -396,18 +396,23 @@ button{font-family:inherit}
     };
   }
 
-  // Fade out footsteps audio gradually
+  // Fade out footsteps audio gradually over 6 seconds
   function fadeOutFootsteps() {
     clearInterval(footstepsFadeInterval);
+    const fadeDuration = 6000; // 6 seconds in ms
+    const fadeStepTime = 100;  // update every 100ms
+    const steps = fadeDuration / fadeStepTime;
+    const volumeStep = stepsSfx.volume / steps;
     footstepsFadeInterval = setInterval(() => {
-      if (stepsSfx.volume > 0.02) {
-        stepsSfx.volume = Math.max(0, stepsSfx.volume - 0.02);
+      if (stepsSfx.volume > volumeStep) {
+        stepsSfx.volume = Math.max(0, stepsSfx.volume - volumeStep);
       } else {
+        stepsSfx.volume = 0;
         stepsSfx.pause();
         stepsSfx.currentTime = 0;
         clearInterval(footstepsFadeInterval);
       }
-    }, 80);
+    }, fadeStepTime);
   }
 
   // Updated to fade in continue with animation class, and fade out correctly
@@ -717,10 +722,7 @@ button{font-family:inherit}
   });
 
 })();
-
 </script>
 
 </body>
 </html>
-
-
