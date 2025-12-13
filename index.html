@@ -3,92 +3,115 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>D&D Invitation — Enhanced</title>
+<title>D&D Invitation</title>
 
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap" rel="stylesheet">
 
 <style>
 :root{
---bg-dark:#0d0f12;
---muted:#d0d4d8;
---parchment:#f6e7b2;
---parchment-ink:#3b2f1f;
+  --bg-dark:#0d0f12;
+  --muted:#d0d4d8;
+  --accent:#ffd8a0;
+  --parchment:#f6e7b2;
+  --parchment-ink:#3b2f1f;
+
+  --ember-core: rgba(255,200,130,.35);
+  --ember-mid: rgba(255,180,110,.28);
+  --ember-soft: rgba(255,170,95,.22);
+  --ember-falloff: rgba(130,70,20,.16);
 }
+
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{
-height:100%;
-background:var(--bg-dark);
-font-family:"IM Fell English",serif;
-color:var(--muted);
-overflow:hidden;
+  height:100%;background:var(--bg-dark);
+  font-family:"IM Fell English",serif;
+  color:var(--muted);overflow:hidden;
 }
-button{font-family:inherit}
+
 .overlay{
-position:fixed;inset:0;
-display:flex;align-items:center;justify-content:center;
-background:var(--bg-dark);
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
 }
+
 .scene{
-width:min(900px,92vw);
-height:min(560px,78vh);
-border-radius:12px;
-position:relative;
-padding:24px;
-box-shadow:0 0 40px rgba(0,0,0,.8) inset;
-opacity:0;
-pointer-events:none;
-transition:opacity .6s ease;
+  width:min(900px,92vw);
+  height:min(560px,78vh);
+  position:relative;
+  border-radius:12px;
+  padding:24px;
+  box-shadow:0 0 40px rgba(0,0,0,.8) inset;
+  opacity:0;
+  transform:scale(.96);
+  transition:opacity .6s ease, transform .6s ease;
+  pointer-events:none;
 }
-.scene.visible{opacity:1;pointer-events:auto}
-.visual{text-align:center;font-size:1rem}
+
+.scene.visible{
+  opacity:1;
+  transform:scale(1);
+  pointer-events:auto;
+}
+
+.visual{
+  width:100%;
+  text-align:center;
+  transition:opacity .4s ease, transform .4s ease;
+}
+
+.fade-out{opacity:0;transform:translateY(6px)}
+.fade-in{opacity:1;transform:none}
+
 .parchment{
-position:absolute;
-left:50%;top:50%;
-transform:translate(-50%,-50%);
-background:var(--parchment);
-color:var(--parchment-ink);
-padding:18px 22px;
-border-radius:12px;
-opacity:0;
-transition:opacity .4s ease;
+  position:absolute;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%) scale(.95);
+  background:var(--parchment);
+  color:var(--parchment-ink);
+  padding:18px 22px;
+  border-radius:12px;
+  opacity:0;
+  box-shadow:
+    0 0 4px var(--ember-core),
+    0 0 10px var(--ember-mid),
+    0 0 18px var(--ember-soft),
+    0 0 30px var(--ember-falloff);
+  transition:opacity .45s ease, transform .45s ease;
 }
-.parchment--visible{opacity:1}
+
+.parchment--visible{
+  opacity:1;
+  transform:translate(-50%,-50%) scale(1.05);
+}
+
 .choices{
-position:absolute;
-left:50%;top:60%;
-transform:translate(-50%,-50%);
-display:flex;gap:18px;
+  position:absolute;
+  left:50%;top:60%;
+  transform:translate(-50%,-50%);
+  display:flex;gap:18px;
 }
+
 .choice{
-padding:10px 18px;
-border-radius:10px;
-background:var(--parchment);
-cursor:pointer;
+  padding:10px 18px;
+  border-radius:10px;
+  background:var(--parchment);
+  color:var(--parchment-ink);
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:
+    0 0 4px var(--ember-core),
+    0 0 10px var(--ember-mid);
 }
+
 .hidden{display:none!important}
-#start-screen{
-position:fixed;inset:0;
-display:flex;align-items:center;justify-content:center;
-background:var(--bg-dark);
-z-index:10;
-}
-#start-screen button{
-padding:18px 36px;
-font-size:1.5rem;
-border-radius:12px;
-background:var(--parchment);
-cursor:pointer;
-}
 </style>
 </head>
 
 <body>
 
-<div id="start-screen">
-<button id="start-btn">Start your quest</button>
+<div id="start-screen" class="overlay">
+  <button id="start-btn">Start your quest</button>
 </div>
 
-<!-- AUDIO -->
 <audio id="bgm" src="sound/bgm.wav" loop preload="auto" muted></audio>
 <audio id="knock-sfx" src="sound/knock-sfx.mp3"></audio>
 <audio id="paper-sfx" src="sound/ping-sfx.mp3"></audio>
@@ -97,23 +120,26 @@ cursor:pointer;
 <audio id="steps-sfx" src="sound/steps-sfx.mp3" loop></audio>
 
 <div id="inv-overlay" class="overlay hidden">
-<div id="scene" class="scene">
-<div id="visual" class="visual"></div>
-<div id="parchment" class="parchment">
-<div id="parchment-text"></div>
-<div id="parchment-sub"></div>
-</div>
-<div id="choices" class="choices hidden">
-<button id="btn-yes" class="choice">Yes</button>
-<button id="btn-no" class="choice">No</button>
-</div>
-</div>
+  <div id="scene" class="scene">
+    <div id="visual" class="visual"></div>
+
+    <div id="parchment" class="parchment hidden">
+      <div id="parchment-text"></div>
+      <div id="parchment-sub"></div>
+    </div>
+
+    <div id="choices" class="choices hidden">
+      <button id="btn-yes" class="choice">Yes</button>
+      <button id="btn-no" class="choice">No</button>
+    </div>
+  </div>
 </div>
 
 <script>
 (() => {
 
 const startBtn = document.getElementById("start-btn");
+const startScreen = document.getElementById("start-screen");
 const overlay = document.getElementById("inv-overlay");
 const sceneEl = document.getElementById("scene");
 const visual = document.getElementById("visual");
@@ -121,8 +147,6 @@ const parchment = document.getElementById("parchment");
 const pText = document.getElementById("parchment-text");
 const pSub = document.getElementById("parchment-sub");
 const choices = document.getElementById("choices");
-const btnYes = document.getElementById("btn-yes");
-const btnNo = document.getElementById("btn-no");
 
 const bgm = document.getElementById("bgm");
 const knockSfx = document.getElementById("knock-sfx");
@@ -131,96 +155,112 @@ const pingSfx = document.getElementById("ping-sfx");
 const thunderSfx = document.getElementById("thunder-sfx");
 const stepsSfx = document.getElementById("steps-sfx");
 
-/* VOLUMES */
-bgm.volume = 0.26;
-knockSfx.volume = 0.65;
-paperSfx.volume = 0.45;
-pingSfx.volume = 0.22;
-thunderSfx.volume = 0.78;
-stepsSfx.volume = 0.15;
+bgm.volume = .3;
+stepsSfx.volume = .55;
 
-let footstepsFadeInterval = null;
+let scene = 0;
+let footstepsFade = null;
 
-/* === TIME-ACCURATE FOOTSTEP FADE === */
-function fadeOutFootsteps(durationMs = 5000) {
-clearInterval(footstepsFadeInterval);
+/* 🔥 SAFE FADE-OUT */
+function fadeOutFootsteps(duration = 5000){
+  clearInterval(footstepsFade);
+  const step = stepsSfx.volume / (duration / 100);
 
-const startVolume = stepsSfx.volume;
-const startTime = performance.now();
-
-footstepsFadeInterval = setInterval(() => {
-const elapsed = performance.now() - startTime;
-const progress = Math.min(elapsed / durationMs, 1);
-
-stepsSfx.volume = startVolume * Math.pow(1 - progress, 2);
-
-if (progress >= 1) {
-stepsSfx.pause();
-stepsSfx.currentTime = 0;
-stepsSfx.volume = startVolume;
-clearInterval(footstepsFadeInterval);
-}
-}, 50);
+  footstepsFade = setInterval(() => {
+    if (stepsSfx.volume > step) {
+      stepsSfx.volume -= step;
+    } else {
+      stepsSfx.volume = 0;
+      stepsSfx.pause();
+      stepsSfx.currentTime = 0;
+      clearInterval(footstepsFade);
+    }
+  }, 100);
 }
 
-function scene0() {
-knockSfx.currentTime = 0;
-knockSfx.play();
-visual.textContent = "Someone knocks on your door...";
+function crossfade(fn){
+  visual.classList.add("fade-out");
+  setTimeout(() => {
+    fn();
+    visual.classList.remove("fade-out");
+    visual.classList.add("fade-in");
+  }, 400);
 }
 
-function scene2() {
-paperSfx.currentTime = 0;
-paperSfx.play();
-parchment.classList.add("parchment--visible");
-pText.textContent =
-"Greetings, brave and probably foolish adventurer!";
-pSub.textContent = "– from the dungeon master";
+function hideAll(){
+  parchment.classList.add("hidden");
+  choices.classList.add("hidden");
 }
 
-function scene3() {
-choices.classList.remove("hidden");
+function scene0(){
+  crossfade(() => {
+    knockSfx.play();
+    visual.textContent = "Someone knocks on your door...";
+    hideAll();
+  });
 }
 
-function scene6() {
-stepsSfx.currentTime = 0;
-stepsSfx.volume = 0.55;
-stepsSfx.play();
-
-/* Fade starts at 1s, ends at 6s */
-setTimeout(() => {
-fadeOutFootsteps(5000);
-}, 1000);
-
-visual.textContent = "The strange person leaves...";
+function scene1(){
+  crossfade(() => {
+    visual.textContent = "They hand you a letter...";
+  });
 }
 
-btnYes.onclick = () => {
-pingSfx.currentTime = 0;
-pingSfx.play();
-choices.classList.add("hidden");
-scene6();
+function scene2(){
+  crossfade(() => {
+    paperSfx.play();
+    parchment.classList.remove("hidden");
+    parchment.classList.add("parchment--visible");
+    pText.textContent = "Greetings, brave and probably foolish adventurer!";
+    pSub.textContent = "– from the dungeon master";
+  });
+}
+
+function scene3(){
+  choices.classList.remove("hidden");
+}
+
+function scene6(){
+  stepsSfx.currentTime = 0;
+  stepsSfx.volume = .55;
+  stepsSfx.play();
+
+  setTimeout(() => fadeOutFootsteps(5000), 1000);
+
+  crossfade(() => {
+    visual.textContent = "The strange person leaves...";
+    hideAll();
+  });
+}
+
+document.addEventListener("click", () => {
+  switch(scene){
+    case 0: scene=1; scene1(); break;
+    case 1: scene=2; scene2(); break;
+    case 2: scene=3; scene3(); break;
+  }
+});
+
+document.getElementById("btn-yes").onclick = e => {
+  e.stopPropagation();
+  pingSfx.play();
+  scene6();
 };
 
-btnNo.onclick = () => {
-pingSfx.currentTime = 0;
-pingSfx.play();
-thunderSfx.currentTime = 0;
-thunderSfx.play();
-choices.classList.add("hidden");
-scene6();
+document.getElementById("btn-no").onclick = e => {
+  e.stopPropagation();
+  pingSfx.play();
+  thunderSfx.play();
+  scene6();
 };
 
 startBtn.onclick = () => {
-document.getElementById("start-screen").style.display = "none";
-overlay.classList.remove("hidden");
-sceneEl.classList.add("visible");
+  startScreen.remove();
+  overlay.classList.remove("hidden");
+  sceneEl.classList.add("visible");
 
-bgm.play().then(() => bgm.muted = false);
-
-scene0();
-setTimeout(scene2, 2000);
-setTimeout(scene3, 4500);
+  bgm.play().then(()=>bgm.muted=false);
+  scene0();
 };
 
 })();
@@ -228,4 +268,3 @@ setTimeout(scene3, 4500);
 
 </body>
 </html>
-
