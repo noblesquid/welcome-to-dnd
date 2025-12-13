@@ -53,7 +53,7 @@ button{font-family:inherit}
   align-items:center;
   justify-content:center;
   padding:24px;
-  box-shadow:0 0 40px rgba(0,0,0,0.8) inset,0 0 60px rgba(0,0,0,0.7);
+  box-shadow:0 0 40px rgba(0,0,0,0.8)
   opacity: 0;
   pointer-events: none;
   background: var(--bg-dark);
@@ -349,6 +349,8 @@ button{font-family:inherit}
   let scene = 0;
   let typingTimer = null;
   let footstepsFadeInterval = null;
+  let lockAdvance = false; // ← ADD THIS
+
 
   function clearTyping(showFull = true) {
     if (typingTimer) {
@@ -600,6 +602,33 @@ button{font-family:inherit}
       hideContinue();
     });
   }
+  // Scene 4: Fate sealed text (plain, typewriter, no parchment)
+function sceneFateSealed(nextCallback) {
+  lockAdvance = true; // 🔒 stop overlay clicks
+
+  crossfade(() => {
+    hideParchment();
+    visual.innerHTML = `<div class="plain-center" id="fate-text"></div>`;
+    const el = document.getElementById('fate-text');
+
+    startTypewriter("Your fate has been sealed.", el, 50, () => {
+      showContinueBelow(el);
+
+      continueEl.onclick = (e) => {
+        e.stopPropagation();          // 🚫 prevent overlay click
+        continueEl.onclick = null;
+        hideContinue();
+        lockAdvance = false;          // 🔓 re-enable advancing
+
+        if (typeof nextCallback === 'function') {
+          nextCallback();
+        }
+      };
+    });
+  });
+}
+
+
 
   // Scene 6: Ending footsteps fade + message
   function scene6() {
@@ -633,48 +662,62 @@ button{font-family:inherit}
 
   // Handle advancing scenes or skipping typing
   function handleAdvance() {
+    if (lockAdvance) return; // ← ADD THIS
     if (typingTimer) { clearTyping(true); return; }
-    switch(scene) {
-      case 0: scene = 1; hideContinue(); scene1(); break;
-      case 1: scene = 2; hideContinue(); scene2(); break;
-      case 2: scene = 3; hideContinue(); scene3(); break;
-      case 3: /* wait for choice */ break;
-      case 4: case 5: scene = 6; hideContinue(); scene6(); break;
-      case 6: endSequence(); break;
-    }
+  switch(scene) {
+
+    case 0: scene = 1; hideContinue(); scene1(); break;
+    case 1: scene = 2; hideContinue(); scene2(); break;
+    case 2: scene = 3; hideContinue(); scene3(); break;
+    case 3: /* wait for choice */ break;
+    case 4: /* fate-sealed, waiting for continue click, ignore overlay */ break;
+    case 5: scene = 6; hideContinue(); scene6(); break; // response done, go to ending
+    case 6: endSequence(); break;
   }
+}
+
 
   // Choices listeners
-  btnYes.addEventListener('click', (e) => {
-    e.stopPropagation();
-    pingSfx.currentTime = 0;
-    pingSfx.play().catch(() => {});
-    hideChoices();
-    document.querySelector('.calltext')?.remove();
+btnYes.addEventListener('click', (e) => {
+  e.stopPropagation();
+  pingSfx.currentTime = 0;
+  pingSfx.play().catch(() => {});
+  hideChoices();
+  document.querySelector('.calltext')?.remove();
+
+  // Start with fate-sealed scene
+  scene = 4; // fate-sealed
+  sceneFateSealed(() => {
+    // After clicking continue, show original response
+    scene = 5; // Yes response
     showParchment(
       "It's the beginning of a new time — full of mist and terror. And you... are about to become a part of it all. Good luck!",
       "",
       true,
       40
     );
-    scene = 4;
   });
+});
 
-  btnNo.addEventListener('click', (e) => {
-    e.stopPropagation();
-    eerieSfx.currentTime = 0;
-    eerieSfx.play().catch(() => {});
-    thunderSfx.currentTime = 0;
-    thunderSfx.play().catch(() => {});
-    hideChoices();
-    document.querySelector('.calltext')?.remove();
+btnNo.addEventListener('click', (e) => {
+  e.stopPropagation();
+  eerieSfx.currentTime = 0;
+  eerieSfx.play().catch(() => {});
+  thunderSfx.currentTime = 0;
+  thunderSfx.play().catch(() => {});
+  hideChoices();
+  document.querySelector('.calltext')?.remove();
+
+  scene = 4; // fate-sealed
+  sceneFateSealed(() => {
+    scene = 5; // No response (rename index if needed)
     showParchment(
       "What a shame. Just when the world found its last hope... well... goodbye.",
       "",
       true,
       48
     );
-    scene = 5;
+  });
 });
 
   // Overlay click advances scene except buttons
@@ -702,30 +745,30 @@ button{font-family:inherit}
   continueEl.addEventListener('mouseleave', () => parchment.classList.remove('halo-strong'));
 
   startBtn.addEventListener('click', () => {
-    startBtn.disabled = true;
-    startScreen.classList.add('fade-out');
-    
-    setTimeout(() => {
-      startScreen.style.display = 'none';
-      overlay.style.display = 'flex';
-      sceneEl.classList.add('visible');
-      bgm.muted = true;
-      bgm.play().then(() => {
-        setTimeout(() => {
-          bgm.muted = false;
-        }, 500);
-      }).catch(() => {});
+  startBtn.disabled = true;
+  startScreen.classList.add('fade-out');
 
-      scene = 0;
-      visual.classList.add('fade-in');
-      scene0();
-    }, 600);
-  });
+  setTimeout(() => {
+    startScreen.style.display = 'none';
+    overlay.style.display = 'flex';
+    sceneEl.classList.add('visible');
+    bgm.muted = true;
+    bgm.play().then(() => {
+      setTimeout(() => {
+        bgm.muted = false;
+      }, 500);
+    }).catch(() => {});
+
+    scene = 0; // Make sure the first scene is Scene 0
+    visual.classList.add('fade-in');
+    scene0();
+  }, 600);
+});
+
 
 })();
 </script>
 
 </body>
 </html>
-
 
