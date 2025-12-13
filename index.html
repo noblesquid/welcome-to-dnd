@@ -401,7 +401,7 @@ button{font-family:inherit}
     const fadeDuration = 6000; // 6 seconds total
     const fadeStepTime = 100;  // update volume every 100ms
     const steps = fadeDuration / fadeStepTime;
-    const initialVolume = stepsSfx.volume || 0.5; // fallback to 0.5 if volume 0
+    const initialVolume = stepsSfx.volume || 0.2; // fallback to 0.2 if volume 0
     const volumeStep = initialVolume / steps;
     let currentStep = 0;
 
@@ -725,5 +725,6 @@ button{font-family:inherit}
 
 </body>
 </html>
+
 
 
