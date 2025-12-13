@@ -16,6 +16,7 @@
   --parchment:#f6e7b2;
   --parchment-ink:#3b2f1f;
 
+  /* 🔥 STRONGER GLOW */
   --ember-core: rgba(255, 210, 150, 0.65);
   --ember-mid:  rgba(255, 190, 130, 0.55);
   --ember-soft: rgba(255, 180, 120, 0.45);
@@ -39,72 +40,10 @@ button{font-family:inherit}
   position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
   background: var(--bg-dark);
 }
-/* ─────────────────────────────────────────────
-   GLOBAL RUNES — uniform across entire screen
-───────────────────────────────────────────── */
-.overlay::after {
-  opacity: var(--runes-opacity, 0);
+.overlay::after{
+  content:"";position:absolute;inset:0;
+  pointer-events:none;
 }
-
-  background-image:
-    url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'>\
-  <g fill='rgba(255,220,160,0.18)' font-size='22' font-family='serif'>\
-    <text x='20'  y='40'>ᚠ</text>\
-    <text x='160' y='30'>ᚢ</text>\
-    <text x='90'  y='70'>ᚦ</text>\
-    <text x='40'  y='140'>ᚱ</text>\
-    <text x='130' y='160'>ᚨ</text>\
-    <text x='70'  y='200'>ᚲ</text>\
-    <text x='190' y='120'>ᛉ</text>\
-  </g>\
-</svg>");
-
-  background-repeat:repeat;
-  background-size:220px 220px;
-
-  opacity: 0;
-  mix-blend-mode:screen;
-
-  filter:
-    blur(0.35px)
-    drop-shadow(0 0 6px rgba(255,180,90,0.22));
-
-  animation: none
-  transition: opacity 4s ease;
-}
-/* Explicitly keep opacity 0 if not .runes-visible for safer default */
-@keyframes fadeInRunes {
-  from { opacity: 0; }
-  to   { opacity: 0.4; }
-}
-
-/* Gradual rune fade-in */
-.overlay.runes-visible::after {
-  animation: fadeInRunes 3s forwards, runePulse 5s ease-in-out infinite;
-}
-
-/* fade in each rune gradually via background opacity mask */
-@keyframes runeFadeIn {
-  0%   { opacity: 0; }
-  25%  { opacity: 0.15; }
-  50%  { opacity: 0.28; }
-  75%  { opacity: 0.36; }
-  100% { opacity: 0.80; }
-}
-
-/* subtle continuous shimmer/pulse */
-@keyframes runePulse {
-  0%, 100% { opacity: 0.38; }
-  50%      { opacity: 0.42; }
-}
-
-@keyframes runePulse{
-  0%   { opacity:0.20; }
-  50%  { opacity:0.40; }
-  100% { opacity:0.20; }
-}
-
 .scene{
   width:min(900px,92vw);
   height:min(560px,78vh);
@@ -115,7 +54,7 @@ button{font-family:inherit}
   align-items:center;
   justify-content:center;
   padding:24px;
-  box-shadow:0 0 40px rgba(0,0,0,0.8) 
+  box-shadow:0 0 40px rgba(0,0,0,0.8)
   opacity: 0;
   pointer-events: none;
   background: var(--bg-dark);
@@ -268,25 +207,17 @@ button{font-family:inherit}
   opacity: 0;
   transition: opacity 0.35s ease;
 }
+
+/* RPG-style pulse using opacity only */
 .continue--visible{
-  opacity:1;
-  animation:pulse 1.2s ease-in-out infinite;
+  opacity: 1;
+  animation: rpgPulse 1.6s ease-in-out infinite;
 }
-/* Added fade-in / fade-out animation for continue */
-.continue.fade-in {
-  animation: fadeIn 0.35s forwards;
-}
-.continue.fade-out {
-  animation: fadeOut 0.35s forwards;
-}
-@keyframes pulse{ 50%{opacity:0.45} }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+
+@keyframes rpgPulse {
+  0%   { opacity: 0.35; }
+  50%  { opacity: 0.85; }
+  100% { opacity: 0.35; }
 }
 
 .typewriter{
@@ -337,92 +268,6 @@ button{font-family:inherit}
 #start-screen button:hover {
   filter: brightness(1.1);
 }
-<!-- Add this CSS inside your existing <style> block at the end -->
-<style>
-.fate-popup {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: var(--parchment);
-  color: var(--parchment-ink);
-  padding: 12px 18px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  box-shadow:
-    0 0 6px var(--ember-strong-core),
-    0 0 14px var(--ember-strong-mid),
-    0 0 26px var(--ember-strong-soft),
-    0 0 38px var(--ember-strong-falloff);
-  opacity: 0;
-  transform: translateY(20px) scale(0.95);
-  pointer-events: none;
-  transition: opacity 0.5s ease, transform 0.5s ease;
-  z-index: 9999;
-}
-
-.fate-popup.visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-</style>
-
-<!-- Add this JS inside your existing <script> block before the closing })(); -->
-<script>
-function showFatePopup(text = "Your fate has been sealed.", duration = 4000) {
-  let popup = document.createElement('div');
-  popup.className = 'fate-popup';
-  popup.textContent = text;
-  document.body.appendChild(popup);
-
-  // trigger fade-in
-  requestAnimationFrame(() => {
-    popup.classList.add('visible');
-  });
-
-  // auto-remove after duration
-  setTimeout(() => {
-    popup.classList.remove('visible');
-    setTimeout(() => popup.remove(), 600);
-  }, duration);
-}
-
-// Call popup when choice buttons are clicked
-btnYes.addEventListener('click', (e) => {
-  e.stopPropagation();
-  pingSfx.currentTime = 0;
-  pingSfx.play().catch(() => {});
-  hideChoices();
-  document.querySelector('.calltext')?.remove();
-  showParchment(
-    "It's the beginning of a new time — full of mist and terror. And you... are about to become a part of it all. Good luck!",
-    "",
-    true,
-    40
-  );
-  scene = 4;
-  setTimeout(() => showFatePopup(), 2500);
-});
-
-btnNo.addEventListener('click', (e) => {
-  e.stopPropagation();
-  eerieSfx.currentTime = 0;
-  eerieSfx.play().catch(() => {});
-  thunderSfx.currentTime = 0;
-  thunderSfx.play().catch(() => {});
-  hideChoices();
-  document.querySelector('.calltext')?.remove();
-  showParchment(
-    "What a shame. Just when the world found its last hope... well... goodbye.",
-    "",
-    true,
-    48
-  );
-  scene = 5;
-  setTimeout(() => showFatePopup(), 2500);
-});
-</script>
-
 </style>
 </head>
 <body>
@@ -497,6 +342,8 @@ btnNo.addEventListener('click', (e) => {
   let scene = 0;
   let typingTimer = null;
   let footstepsFadeInterval = null;
+  let lockAdvance = false; // ← ADD THIS
+
 
   function clearTyping(showFull = true) {
     if (typingTimer) {
@@ -575,7 +422,7 @@ btnNo.addEventListener('click', (e) => {
 
     continueEl.classList.remove('hidden', 'fade-out');
     continueEl.setAttribute('aria-hidden','false');
-    continueEl.classList.add('fade-in');
+    continueEl.classList.add('continue--visible');
     requestAnimationFrame(() => {
       const sRect = sceneEl.getBoundingClientRect();
       let left = sRect.width / 2;
@@ -590,16 +437,17 @@ btnNo.addEventListener('click', (e) => {
       continueEl.style.transform = 'translate(-50%,0)';
     });
   }
-  function hideContinue() {
-    if (continueEl.classList.contains('hidden') || continueEl.classList.contains('fade-out')) return;
-    continueEl.classList.remove('fade-in');
-    continueEl.classList.add('fade-out');
-    continueEl.setAttribute('aria-hidden','true');
-    setTimeout(() => {
-      continueEl.classList.add('hidden');
-      continueEl.classList.remove('fade-out');
-    }, 350);
-  }
+ function hideContinue() {
+  if (continueEl.classList.contains('hidden') || continueEl.classList.contains('fade-out')) return;
+
+  continueEl.classList.remove('continue--visible');
+  continueEl.setAttribute('aria-hidden','true');
+
+  setTimeout(() => {
+    continueEl.classList.add('hidden');
+    continueEl.classList.remove('fade-out');
+  }, 350);
+}
 
   function centerParchment() {
     parchment.style.left = '50%';
@@ -679,8 +527,7 @@ btnNo.addEventListener('click', (e) => {
     }, duration);
   }
 
-  // Scene functions omitted for brevity (unchanged from previous)...
-
+  // Scene 0: Knock on the door
   function scene0() {
     knockSfx.currentTime = 0;
     knockSfx.play().catch(()=>{});
@@ -692,6 +539,8 @@ btnNo.addEventListener('click', (e) => {
       setTimeout(() => showContinueBelow(tEl), 420);
     });
   }
+
+  // Scene 1: They hand you a letter...
   function scene1() {
     crossfade(() => {
       visual.innerHTML = `<div class="plain-center"><span id="letter-plain"></span></div>`;
@@ -704,6 +553,8 @@ btnNo.addEventListener('click', (e) => {
       });
     });
   }
+
+  // Scene 2: Show parchment with message - with pop fade in effect
   function scene2() {
     crossfade(() => {
       visual.innerHTML = '';
@@ -721,6 +572,8 @@ btnNo.addEventListener('click', (e) => {
       );
     });
   }
+
+  // Scene 3: Show choices Yes/No
   function scene3() {
     crossfade(() => {
       hideParchment();
@@ -743,6 +596,37 @@ btnNo.addEventListener('click', (e) => {
       hideContinue();
     });
   }
+  // Scene 4: Fate sealed text (plain, typewriter, no parchment)
+// Scene 4: Fate sealed text (advance on ANY click)
+function sceneFateSealed(nextCallback) {
+  lockAdvance = false; // ✅ allow overlay clicks
+
+  crossfade(() => {
+    hideParchment();
+    visual.innerHTML = `<div class="plain-center" id="fate-text"></div>`;
+    const el = document.getElementById('fate-text');
+
+    startTypewriter("Your fate has been sealed.", el, 50, () => {
+      showContinueBelow(el); // optional visual hint
+    });
+  });
+
+  // One-time advance handler
+  const advanceOnce = () => {
+    if (scene !== 4) return; // safety
+    hideContinue();
+    overlay.removeEventListener('click', advanceOnce);
+
+    if (typeof nextCallback === 'function') {
+      nextCallback();
+    }
+  };
+
+  // Listen for ANY click on overlay
+  overlay.addEventListener('click', advanceOnce);
+}
+
+  // Scene 6: Ending footsteps fade + message
   function scene6() {
     crossfade(() => {
       hideParchment();
@@ -764,6 +648,7 @@ btnNo.addEventListener('click', (e) => {
     });
   }
 
+  // End all sequences & fade overlay
   function endSequence() {
     fadeOutFootsteps();
     overlay.style.transition = 'opacity .44s ease';
@@ -771,80 +656,64 @@ btnNo.addEventListener('click', (e) => {
     setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 520);
   }
 
+  // Handle advancing scenes or skipping typing
   function handleAdvance() {
+    if (lockAdvance) return; // ← ADD THIS
     if (typingTimer) { clearTyping(true); return; }
-    switch(scene) {
-      case 0: scene = 1; hideContinue(); scene1(); break;
-      case 1: scene = 2; hideContinue(); scene2(); break;
-      case 2: scene = 3; hideContinue(); scene3(); break;
-      case 3: /* wait for choice */ break;
-      case 4: case 5: scene = 6; hideContinue(); scene6(); break;
-      case 6: endSequence(); break;
-    }
-  }
+  switch(scene) {
 
-  // Choices listeners for Yes and No buttons with runes fade-in
- function fadeInRunes() {
-  if (!overlay.classList.contains('runes-visible')) {
-    overlay.classList.add('runes-visible');
-    
-    // Slight stagger effect by updating opacity over time
-    let op = 0;
-    const step = 0.02;       // small opacity increment
-    const interval = 100;    // every 100ms
-    const fadeTimer = setInterval(() => {
-      op += step;
-      if (op >= 0.4) {
-        overlay.style.setProperty('--runes-opacity', 0.4);
-        clearInterval(fadeTimer);
-      } else {
-        overlay.style.setProperty('--runes-opacity', op);
-      }
-    }, interval);
+    case 0: scene = 1; hideContinue(); scene1(); break;
+    case 1: scene = 2; hideContinue(); scene2(); break;
+    case 2: scene = 3; hideContinue(); scene3(); break;
+    case 3: /* wait for choice */ break;
+    case 4: /* fate-sealed, waiting for continue click, ignore overlay */ break;
+    case 5: scene = 6; hideContinue(); scene6(); break; // response done, go to ending
+    case 6: endSequence(); break;
   }
 }
 
 
- btnYes.addEventListener('click', (e) => {
-    e.stopPropagation();
-    pingSfx.currentTime = 0;
-    pingSfx.play().catch(() => {});
+  // Choices listeners
+btnYes.addEventListener('click', (e) => {
+  e.stopPropagation();
+  pingSfx.currentTime = 0;
+  pingSfx.play().catch(() => {});
+  hideChoices();
+  document.querySelector('.calltext')?.remove();
 
-    hideChoices();
-    document.querySelector('.calltext')?.remove();
-
-    // Fade in runes slowly
-    fadeInRunes();
-
+  // Start with fate-sealed scene
+  scene = 4; // fate-sealed
+  sceneFateSealed(() => {
+    // After clicking continue, show original response
+    scene = 5; // Yes response
     showParchment(
       "It's the beginning of a new time — full of mist and terror. And you... are about to become a part of it all. Good luck!",
       "",
       true,
       40
     );
-    scene = 4;
+  });
 });
 
-  btnNo.addEventListener('click', (e) => {
-    e.stopPropagation();
-    eerieSfx.currentTime = 0;
-    eerieSfx.play().catch(() => {});
-    thunderSfx.currentTime = 0;
-    thunderSfx.play().catch(() => {});
+btnNo.addEventListener('click', (e) => {
+  e.stopPropagation();
+  eerieSfx.currentTime = 0;
+  eerieSfx.play().catch(() => {});
+  thunderSfx.currentTime = 0;
+  thunderSfx.play().catch(() => {});
+  hideChoices();
+  document.querySelector('.calltext')?.remove();
 
-    hideChoices();
-    document.querySelector('.calltext')?.remove();
-
-    // Fade in runes slowly
-    fadeInRunes();
-
+  scene = 4; // fate-sealed
+  sceneFateSealed(() => {
+    scene = 5; // No response (rename index if needed)
     showParchment(
       "What a shame. Just when the world found its last hope... well... goodbye.",
       "",
       true,
       48
     );
-    scene = 5;
+  });
 });
 
   // Overlay click advances scene except buttons
@@ -872,30 +741,24 @@ btnNo.addEventListener('click', (e) => {
   continueEl.addEventListener('mouseleave', () => parchment.classList.remove('halo-strong'));
 
   startBtn.addEventListener('click', () => {
-    startBtn.disabled = true;
-    startScreen.classList.add('fade-out');
-    
-    setTimeout(() => {
-      startScreen.style.display = 'none';
+  startBtn.disabled = true;
+  startScreen.classList.add('fade-out');
 
-      // Show overlay first
-      overlay.style.display = 'flex';
-      
-      // **Reset runes to hidden at start**
-      overlay.classList.remove('runes-visible', 'runes-strong');
+  setTimeout(() => {
+    startScreen.style.display = 'none';
+    overlay.style.display = 'flex';
+    sceneEl.classList.add('visible');
+    bgm.muted = true;
+    bgm.play().then(() => {
+      setTimeout(() => {
+        bgm.muted = false;
+      }, 500);
+    }).catch(() => {});
 
-      sceneEl.classList.add('visible');
-      bgm.muted = true;
-      bgm.play().then(() => {
-        setTimeout(() => {
-          bgm.muted = false;
-        }, 500);
-      }).catch(() => {});
-
-      scene = 0;
-      visual.classList.add('fade-in');
-      scene0();
-    }, 600);
+    scene = 0; // Make sure the first scene is Scene 0
+    visual.classList.add('fade-in');
+    scene0();
+  }, 600);
 });
 
 
@@ -904,4 +767,3 @@ btnNo.addEventListener('click', (e) => {
 
 </body>
 </html>
-
