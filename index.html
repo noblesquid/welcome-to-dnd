@@ -342,6 +342,9 @@ button{font-family:inherit}
   thunderSfx.volume = 0.60;
   stepsSfx.volume = 0.5;
 
+  // Disable looping on footsteps sound
+  stepsSfx.loop = false;
+
   let scene = 0;
   let typingTimer = null;
   let footstepsFadeInterval = null;
@@ -393,9 +396,30 @@ button{font-family:inherit}
     };
   }
 
+  // Fade out footsteps audio gradually
+  function fadeOutFootsteps() {
+    clearInterval(footstepsFadeInterval);
+    footstepsFadeInterval = setInterval(() => {
+      if (stepsSfx.volume > 0.02) {
+        stepsSfx.volume = Math.max(0, stepsSfx.volume - 0.02);
+      } else {
+        stepsSfx.pause();
+        stepsSfx.currentTime = 0;
+        clearInterval(footstepsFadeInterval);
+      }
+    }, 80);
+  }
+
   // Updated to fade in continue with animation class, and fade out correctly
   function showContinueBelow(targetEl = null) {
-    if(!continueEl.classList.contains('hidden')) return; // avoid retrigger
+    if (!continueEl.classList.contains('hidden')) return; // avoid retrigger
+
+    // Complete fade out footsteps immediately when continue appears
+    clearInterval(footstepsFadeInterval);
+    stepsSfx.volume = 0;
+    stepsSfx.pause();
+    stepsSfx.currentTime = 0;
+
     continueEl.classList.remove('hidden', 'fade-out');
     continueEl.setAttribute('aria-hidden','false');
     continueEl.classList.add('fade-in');
@@ -414,7 +438,7 @@ button{font-family:inherit}
     });
   }
   function hideContinue() {
-    if(continueEl.classList.contains('hidden') || continueEl.classList.contains('fade-out')) return;
+    if (continueEl.classList.contains('hidden') || continueEl.classList.contains('fade-out')) return;
     continueEl.classList.remove('fade-in');
     continueEl.classList.add('fade-out');
     continueEl.setAttribute('aria-hidden','true');
@@ -585,23 +609,12 @@ button{font-family:inherit}
         stepsSfx.play();
       } catch (e) {}
 
-      startTypewriter("The strange person leaves...", el, 48, () => showContinueBelow(el));
+      startTypewriter("The strange person leaves...", el, 48, () => {
+        fadeOutFootsteps(); // Start fading footsteps when typing finishes
+        showContinueBelow(el);
+      });
       hideChoices();
     });
-  }
-
-  // Fade out footsteps audio gradually
-  function fadeOutFootsteps() {
-    clearInterval(footstepsFadeInterval);
-    footstepsFadeInterval = setInterval(() => {
-      if (stepsSfx.volume > 0.02) {
-        stepsSfx.volume = Math.max(0, stepsSfx.volume - 0.02);
-      } else {
-        stepsSfx.pause();
-        stepsSfx.currentTime = 0;
-        clearInterval(footstepsFadeInterval);
-      }
-    }, 80);
   }
 
   // End all sequences & fade overlay
@@ -704,6 +717,7 @@ button{font-family:inherit}
   });
 
 })();
+
 </script>
 
 </body>
