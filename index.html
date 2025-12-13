@@ -573,22 +573,27 @@ button{font-family:inherit}
   }
 
   // Scene 6: Ending footsteps fade + message
-  function scene6() {
-    crossfade(() => {
-      hideParchment();
-      visual.innerHTML = `<div class="plain-center"><span id="leave-text"></span></div>`;
-      const el = document.getElementById('leave-text');
+ function scene6() {
+  crossfade(() => {
+    hideParchment();
+    visual.innerHTML = `<div class="plain-center"><span id="leave-text"></span></div>`;
+    const el = document.getElementById('leave-text');
 
-      try {
-        stepsSfx.currentTime = 0;
-        stepsSfx.volume = 0.8;
-        stepsSfx.play();
-      } catch (e) {}
+    try {
+      stepsSfx.currentTime = 0;
+      stepsSfx.volume = 0.8;
+      stepsSfx.play();
+    } catch (e) {}
 
-      startTypewriter("The strange person leaves...", el, 48, () => showContinueBelow(el));
-      hideChoices();
-    });
-  }
+    setTimeout(() => {
+      fadeOutFootsteps();
+    }, 1200);
+
+    startTypewriter("The strange person leaves...", el, 48, () => showContinueBelow(el));
+    hideChoices();
+  });
+}
+
 
   // Fade out footsteps audio gradually
   function fadeOutFootsteps() {
@@ -708,5 +713,6 @@ button{font-family:inherit}
 
 </body>
 </html>
+
 
 
