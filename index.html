@@ -647,6 +647,34 @@ function sceneFateSealed(nextCallback) {
       hideChoices();
     });
   }
+  // Scene 7: Final dice epilogue
+function scene7_diceEpilogue() {
+  crossfade(() => {
+    hideParchment();
+    hideChoices();
+    hideContinue();
+
+    visual.innerHTML = `<div class="plain-center" id="dice-text"></div>`;
+    const el = document.getElementById('dice-text');
+
+    // VERY slow typewriter
+    startTypewriter(
+      "Somewhere far away... a die falls onto a waiting table.",
+      el,
+      80, // slow typing speed
+      () => {
+        // Wait 3 seconds after fully written, then fade out
+        setTimeout(() => {
+          visual.classList.add('fade-out');
+
+          setTimeout(() => {
+            endSequence();
+          }, 600); // allow fade-out to finish
+        }, 3000);
+      }
+    );
+  });
+}
 
   // End all sequences & fade overlay
   function endSequence() {
@@ -668,7 +696,15 @@ function sceneFateSealed(nextCallback) {
     case 3: /* wait for choice */ break;
     case 4: /* fate-sealed, waiting for continue click, ignore overlay */ break;
     case 5: scene = 6; hideContinue(); scene6(); break; // response done, go to ending
-    case 6: endSequence(); break;
+    case 6:
+     scene = 7;
+     hideContinue();
+     scene7_diceEpilogue();
+     break;
+
+    case 7:
+    // Do nothing — auto-fades and ends
+    break;
   }
 }
 
