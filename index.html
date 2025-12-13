@@ -42,7 +42,6 @@ button{font-family:inherit}
 .overlay::after{
   content:"";position:absolute;inset:0;
   pointer-events:none;
-  /* removed vignette effect */
 }
 .scene{
   width:min(900px,92vw);
@@ -57,7 +56,7 @@ button{font-family:inherit}
   box-shadow:0 0 40px rgba(0,0,0,0.8) inset,0 0 60px rgba(0,0,0,0.7);
   opacity: 0;
   pointer-events: none;
-  background: var(--bg-dark); /* solid background */
+  background: var(--bg-dark);
   transition: opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1);
   transform: scale(0.95);
 }
@@ -398,38 +397,31 @@ button{font-family:inherit}
 
   // Fade out footsteps audio gradually over 6 seconds
   function fadeOutFootsteps() {
-  clearInterval(footstepsFadeInterval);
-  const fadeDuration = 6000; // 6 seconds total
-  const fadeStepTime = 100;  // update volume every 100ms
-  const steps = fadeDuration / fadeStepTime;
-  const initialVolume = stepsSfx.volume || 0.5; // fallback to 0.5 if volume 0
-  const volumeStep = initialVolume / steps;
-  let currentStep = 0;
+    clearInterval(footstepsFadeInterval);
+    const fadeDuration = 6000; // 6 seconds total
+    const fadeStepTime = 100;  // update volume every 100ms
+    const steps = fadeDuration / fadeStepTime;
+    const initialVolume = stepsSfx.volume || 0.5; // fallback to 0.5 if volume 0
+    const volumeStep = initialVolume / steps;
+    let currentStep = 0;
 
-  footstepsFadeInterval = setInterval(() => {
-    currentStep++;
-    let newVolume = initialVolume - volumeStep * currentStep;
-    if (newVolume > 0) {
-      stepsSfx.volume = newVolume;
-    } else {
-      stepsSfx.volume = 0;
-      stepsSfx.pause();
-      stepsSfx.currentTime = 0;
-      clearInterval(footstepsFadeInterval);
-    }
-  }, fadeStepTime);
-}
+    footstepsFadeInterval = setInterval(() => {
+      currentStep++;
+      let newVolume = initialVolume - volumeStep * currentStep;
+      if (newVolume > 0) {
+        stepsSfx.volume = newVolume;
+      } else {
+        stepsSfx.volume = 0;
+        stepsSfx.pause();
+        stepsSfx.currentTime = 0;
+        clearInterval(footstepsFadeInterval);
+      }
+    }, fadeStepTime);
+  }
 
-
-  // Updated to fade in continue with animation class, and fade out correctly
+  // Show continue without interfering with footsteps sound
   function showContinueBelow(targetEl = null) {
     if (!continueEl.classList.contains('hidden')) return; // avoid retrigger
-
-    // Complete fade out footsteps immediately when continue appears
-    clearInterval(footstepsFadeInterval);
-    stepsSfx.volume = 0;
-    stepsSfx.pause();
-    stepsSfx.currentTime = 0;
 
     continueEl.classList.remove('hidden', 'fade-out');
     continueEl.setAttribute('aria-hidden','false');
@@ -620,8 +612,9 @@ button{font-family:inherit}
         stepsSfx.play();
       } catch (e) {}
 
+      // Start footsteps fadeout immediately as typing starts
+      fadeOutFootsteps();
       startTypewriter("The strange person leaves...", el, 48, () => {
-        fadeOutFootsteps(); // Start fading footsteps when typing finishes
         showContinueBelow(el);
       });
       hideChoices();
