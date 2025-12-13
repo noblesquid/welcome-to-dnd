@@ -398,22 +398,28 @@ button{font-family:inherit}
 
   // Fade out footsteps audio gradually over 6 seconds
   function fadeOutFootsteps() {
-    clearInterval(footstepsFadeInterval);
-    const fadeDuration = 6000; // 6 seconds in ms
-    const fadeStepTime = 100;  // update every 100ms
-    const steps = fadeDuration / fadeStepTime;
-    const volumeStep = stepsSfx.volume / steps;
-    footstepsFadeInterval = setInterval(() => {
-      if (stepsSfx.volume > volumeStep) {
-        stepsSfx.volume = Math.max(0, stepsSfx.volume - volumeStep);
-      } else {
-        stepsSfx.volume = 0;
-        stepsSfx.pause();
-        stepsSfx.currentTime = 0;
-        clearInterval(footstepsFadeInterval);
-      }
-    }, fadeStepTime);
-  }
+  clearInterval(footstepsFadeInterval);
+  const fadeDuration = 6000; // 6 seconds total
+  const fadeStepTime = 100;  // update volume every 100ms
+  const steps = fadeDuration / fadeStepTime;
+  const initialVolume = stepsSfx.volume || 0.5; // fallback to 0.5 if volume 0
+  const volumeStep = initialVolume / steps;
+  let currentStep = 0;
+
+  footstepsFadeInterval = setInterval(() => {
+    currentStep++;
+    let newVolume = initialVolume - volumeStep * currentStep;
+    if (newVolume > 0) {
+      stepsSfx.volume = newVolume;
+    } else {
+      stepsSfx.volume = 0;
+      stepsSfx.pause();
+      stepsSfx.currentTime = 0;
+      clearInterval(footstepsFadeInterval);
+    }
+  }, fadeStepTime);
+}
+
 
   // Updated to fade in continue with animation class, and fade out correctly
   function showContinueBelow(targetEl = null) {
