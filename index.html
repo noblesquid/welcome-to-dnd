@@ -142,6 +142,15 @@ button{font-family:inherit}
   0%   { opacity: 0; transform: translate(-50%, -55%) scale(0.9); }
   100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
+/* Reverse pop fade-out for parchment */
+.parchment--reverse-pop {
+  animation: reversePopFade 0.45s forwards;
+}
+
+@keyframes reversePopFade {
+  0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -55%) scale(0.9); }
+}
 
 .parchment::before{
   content:"";
@@ -482,12 +491,23 @@ button{font-family:inherit}
     });
   }
 
-  function hideParchment() {
-    clearTyping();
+ function hideParchment(reversePop = false) {
+  clearTyping();
+  if (reversePop) {
+    parchment.classList.remove('parchment--visible', 'fade-in-pop');
+    parchment.classList.add('parchment--reverse-pop');
+    parchment.setAttribute('aria-hidden','true');
+    setTimeout(() => {
+      parchment.classList.remove('parchment--reverse-pop');
+      parchment.classList.add('hidden');
+    }, 450);
+  } else {
     parchment.classList.remove('parchment--visible', 'fade-in-pop');
     parchment.setAttribute('aria-hidden','true');
     setTimeout(() => parchment.classList.add('hidden'), 420);
   }
+}
+
 
   function revealChoices() {
     choices.classList.remove('hidden');
@@ -692,7 +712,13 @@ function scene7_diceEpilogue() {
 
     case 0: scene = 1; hideContinue(); scene1(); break;
     case 1: scene = 2; hideContinue(); scene2(); break;
-    case 2: scene = 3; hideContinue(); scene3(); break;
+    case 2: 
+  scene = 3; 
+  hideParchment(true); // reverse pop effect
+  hideContinue(); 
+  scene3(); 
+  break;
+
     case 3: /* wait for choice */ break;
     case 4: /* fate-sealed, waiting for continue click, ignore overlay */ break;
     case 5: scene = 6; hideContinue(); scene6(); break; // response done, go to ending
