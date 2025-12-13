@@ -5,37 +5,284 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>D&amp;D Invitation — Enhanced</title>
 
+<!-- Fantasy font -->
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap" rel="stylesheet">
 
 <style>
-/* ─────────── UNCHANGED CSS ─────────── */
 :root{
   --bg-dark:#0d0f12;
   --muted:#d0d4d8;
   --accent:#ffd8a0;
   --parchment:#f6e7b2;
   --parchment-ink:#3b2f1f;
+
+  --ember-core: rgba(255, 200, 130, 0.35);
+  --ember-mid:  rgba(255, 180, 110, 0.28);
+  --ember-soft: rgba(255, 170, 95,  0.22);
+  --ember-falloff: rgba(130, 70, 20,  0.16);
+
+  --ember-strong-core: rgba(255, 210, 150, 0.50);
+  --ember-strong-mid:  rgba(255, 190, 130, 0.40);
+  --ember-strong-soft: rgba(255, 180, 120, 0.32);
+  --ember-strong-falloff: rgba(150, 80, 30, 0.22);
 }
+
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{
   height:100%;width:100%;background:var(--bg-dark);
   font-family:"IM Fell English",serif;color:var(--muted);overflow:hidden;
 }
-.hidden{display:none!important}
+button{font-family:inherit}
+
+/* Overlay & Scene */
+.overlay{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background: var(--bg-dark);
+}
+.overlay::after{
+  content:"";position:absolute;inset:0;
+  pointer-events:none;
+  /* removed vignette effect */
+}
+.scene{
+  width:min(900px,92vw);
+  height:min(560px,78vh);
+  border-radius:12px;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  box-shadow:0 0 40px rgba(0,0,0,0.8) inset,0 0 60px rgba(0,0,0,0.7);
+  opacity: 0;
+  pointer-events: none;
+  background: var(--bg-dark); /* solid background */
+  transition: opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1);
+  transform: scale(0.95);
+}
+.scene.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.visual-wrap{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+.visual{
+  width:100%;
+  text-align:center;
+  line-height:1.35;
+  user-select:none;
+  pointer-events:none;
+  transition:opacity .42s ease, transform .42s ease;
+  will-change:opacity,transform;
+}
+.fade-out{ opacity:0; transform:translateY(6px) scale(.995); }
+.fade-in{ opacity:1; transform:translateY(0) scale(1); }
+
+.plain-center{
+  font-weight:600;
+  font-size:1rem;
+  color:#fff;
+  text-align:center;
+}
+
+.text-reveal{
+  opacity:0; 
+  transform:translateY(8px);
+  animation:reveal .46s ease forwards;
+}
+@keyframes reveal{ to{opacity:1; transform:translateY(0)} }
+
+.parchment{
+  position:absolute;
+  left:50%;top:50%;
+  transform:translate(-50%,-55%) scale(.97);
+  padding:18px 22px;
+  border-radius:12px;
+  background:var(--parchment);
+  border:1px solid rgba(0,0,0,0.06);
+  min-width:320px;max-width:74%;
+  opacity:0;
+  pointer-events:auto;
+  text-align:center;
+  box-shadow:
+    0 0 4px var(--ember-core),
+    0 0 10px var(--ember-mid),
+    0 0 18px var(--ember-soft),
+    0 0 30px var(--ember-falloff);
+  transition:
+    opacity 0.45s ease, 
+    transform 0.45s cubic-bezier(.2,.9,.2,1),
+    box-shadow 0.25s ease;
+}
+.parchment.halo-strong{
+  box-shadow:
+    0 0 6px var(--ember-strong-core),
+    0 0 14px var(--ember-strong-mid),
+    0 0 26px var(--ember-strong-soft),
+    0 0 38px var(--ember-strong-falloff);
+}
+.parchment--visible{
+  opacity:1;
+  transform: translate(-50%, -50%) scale(1.08);
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(.2,.9,.2,1);
+}
+.parchment--visible.fade-in-pop {
+  animation: popfadein 0.45s forwards;
+}
+@keyframes popfadein {
+  0%   { opacity: 0; transform: translate(-50%, -55%) scale(0.9); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.parchment::before{
+  content:"";
+  position:absolute;
+  inset:-6px;
+  pointer-events:none;
+  border-radius:inherit;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255,140,70,0.18) 0%, transparent 40%),
+    radial-gradient(circle at 88% 12%, rgba(255,140,70,0.14) 0%, transparent 40%),
+    radial-gradient(circle at 12% 92%, rgba(255,140,70,0.16) 0%, transparent 40%),
+    radial-gradient(circle at 88% 88%, rgba(255,140,70,0.12) 0%, transparent 40%);
+  opacity:0.24;
+  animation:embers 6s ease-in-out infinite;
+  mix-blend-mode:screen;
+}
+
+@keyframes embers {
+  0%   { opacity:0.18; transform:scale(1); }
+  25%  { opacity:0.28; transform:scale(1.01); }
+  50%  { opacity:0.34; transform:scale(1.02); }
+  75%  { opacity:0.26; transform:scale(1.01); }
+  100% { opacity:0.18; transform:scale(1); }
+}
+
+.parchment-text{ color:var(--parchment-ink); font-weight:500; font-size:.98rem; line-height:1.45; margin-bottom:8px; }
+.parchment-sub{ color:#6a533f; font-style:italic; font-size:.85rem; line-height:1.25; }
+
+.choices{
+  position:absolute;
+  left:50%;top:55%;
+  transform:translate(-50%,-50%);
+  display:flex;gap:18px;
+  z-index:40;
+  pointer-events:auto;
+}
+.choice{
+  padding:10px 18px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);
+  font-weight:600;cursor:pointer;background:var(--parchment);color:var(--parchment-ink);font-size:.9rem;
+  opacity:0; transform:translateY(10px);
+  transition:opacity .36s ease, transform .36s ease, filter .12s ease, box-shadow .28s ease;
+  box-shadow:
+    0 0 4px var(--ember-core),
+    0 0 10px var(--ember-mid),
+    0 0 18px var(--ember-soft),
+    0 0 30px var(--ember-falloff);
+}
+.choice:hover{
+  filter:brightness(1.04);
+  box-shadow:
+    0 0 6px var(--ember-strong-core),
+    0 0 14px var(--ember-strong-mid),
+    0 0 26px var(--ember-strong-soft),
+    0 0 38px var(--ember-strong-falloff);
+}
+
+.continue{
+  position:absolute;
+  color:var(--muted);
+  font-size:.85rem;
+  pointer-events:auto;
+  user-select:none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.continue--visible{
+  opacity:1;
+  animation:pulse 1.2s ease-in-out infinite;
+}
+/* Added fade-in / fade-out animation for continue */
+.continue.fade-in {
+  animation: fadeIn 0.35s forwards;
+}
+.continue.fade-out {
+  animation: fadeOut 0.35s forwards;
+}
+@keyframes pulse{ 50%{opacity:0.45} }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .typewriter{
+  display:inline-block; white-space:pre-wrap; overflow:hidden;
   border-right:2px solid rgba(60,40,20,0.6);
   animation:caret .9s steps(1) infinite;
 }
-@keyframes caret{50%{border-right-color:transparent}}
-/* (rest of your CSS remains exactly as-is) */
+@keyframes caret{ 50%{ border-right-color:transparent; } }
+
+.hidden{ display:none!important; }
+
+@media (max-width:520px){
+  .scene{ padding:12px; border-radius:8px; }
+  .parchment{ min-width:260px; max-width:88%; padding:14px }
+  .choice{ padding:9px 12px; font-size:.85rem }
+}
+
+/* Start button on full screen */
+#start-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-dark);
+  z-index: 100;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+#start-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+#start-screen button {
+  background: var(--parchment);
+  color: var(--parchment-ink);
+  border: none;
+  border-radius: 12px;
+  padding: 18px 36px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow:
+    0 0 10px var(--ember-core),
+    0 0 20px var(--ember-mid);
+  transition: filter 0.3s ease;
+}
+#start-screen button:hover {
+  filter: brightness(1.1);
+}
 </style>
 </head>
-
 <body>
 
-<!-- Start screen -->
-<div id="start-screen">
-  <button id="start-btn">Start your quest</button>
+<!-- Start screen with Start your quest button -->
+<div id="start-screen" role="dialog" aria-modal="true" aria-label="Start invitation and music">
+  <button id="start-btn" aria-label="Start the invitation and play music">Start your quest</button>
 </div>
 
 <!-- Audio -->
@@ -44,26 +291,42 @@ html,body{
 <audio id="paper-sfx" src="sound/ping-sfx.mp3" preload="auto"></audio>
 <audio id="ping-sfx" src="sound/ping-sfx.mp3" preload="auto"></audio>
 <audio id="thunder-sfx" src="sound/thunder-sfx.mp3" preload="auto"></audio>
-
-<!-- 🔥 FOOTSTEPS — loop REMOVED -->
-<audio id="steps-sfx" src="sound/steps-sfx.mp3" preload="auto"></audio>
+<audio id="steps-sfx" src="sound/steps-sfx.mp3" loop preload="auto"></audio>
 
 <div id="inv-overlay" class="overlay" style="display:none;">
-  <div id="scene" class="scene">
+  <div id="scene" class="scene" role="dialog" aria-modal="true" aria-label="Dungeons &amp; Dragons Invitation">
     <div class="visual-wrap">
-      <div id="visual" class="visual fade-in"></div>
+      <div id="visual" class="visual fade-in" aria-live="polite"></div>
     </div>
-    <div id="continue" class="continue hidden">▼ Click to continue ▼</div>
+
+    <div id="parchment" class="parchment" aria-hidden="true" role="document">
+      <div id="parchment-text" class="parchment-text"></div>
+      <div id="parchment-sub" class="parchment-sub"></div>
+    </div>
+
+    <div id="choices" class="choices hidden" role="group" aria-label="Invitation choices">
+      <button id="btn-yes" class="choice" aria-pressed="false">Yes</button>
+      <button id="btn-no"  class="choice" aria-pressed="false">No</button>
+    </div>
+
+    <div id="continue" class="continue hidden" aria-hidden="true" title="Click to advance">▼ Click to continue ▼</div>
   </div>
 </div>
 
 <script>
 (() => {
-
-  const visual = document.getElementById('visual');
-  const continueEl = document.getElementById('continue');
+  const startScreen = document.getElementById('start-screen');
+  const startBtn = document.getElementById('start-btn');
   const overlay = document.getElementById('inv-overlay');
   const sceneEl = document.getElementById('scene');
+  const visual = document.getElementById('visual');
+  const parchment = document.getElementById('parchment');
+  const pText = document.getElementById('parchment-text');
+  const pSub = document.getElementById('parchment-sub');
+  const continueEl = document.getElementById('continue');
+  const choices = document.getElementById('choices');
+  const btnYes = document.getElementById('btn-yes');
+  const btnNo  = document.getElementById('btn-no');
 
   const bgm = document.getElementById("bgm");
   const knockSfx = document.getElementById("knock-sfx");
@@ -72,16 +335,16 @@ html,body{
   const thunderSfx = document.getElementById("thunder-sfx");
   const stepsSfx = document.getElementById("steps-sfx");
 
-  /* ─────────── ORIGINAL VOLUME SECTION (UNCHANGED) ─────────── */
   bgm.volume = 0.30;
   knockSfx.volume = 0.40;
   paperSfx.volume = 0.15;
   pingSfx.volume = 0.15;
   thunderSfx.volume = 0.60;
-  stepsSfx.volume = 0.2;
+  stepsSfx.volume = 0.5;
 
   let scene = 0;
   let typingTimer = null;
+  let footstepsFadeInterval = null;
 
   function clearTyping(showFull = true) {
     if (typingTimer) {
@@ -91,18 +354,10 @@ html,body{
       }
       typingTimer = null;
     }
-    document.querySelectorAll('.typewriter')
-      .forEach(e => e.classList.remove('typewriter'));
+    document.querySelectorAll('.typewriter').forEach(e => e.classList.remove('typewriter'));
   }
 
-  /* ─────────── TYPEWRITER (ENHANCED WITH PROGRESS) ─────────── */
-  function startTypewriter(
-    text,
-    el,
-    baseSpeed = 35,
-    onComplete = null,
-    onProgress = null
-  ) {
+  function startTypewriter(text, el, baseSpeed = 35, onComplete = null) {
     clearTyping(false);
     el.textContent = '';
     el.classList.add('typewriter');
@@ -112,21 +367,17 @@ html,body{
     function step() {
       el.textContent += text[i] || '';
       i++;
-
-      if (typeof onProgress === 'function') {
-        onProgress(i / total); // 0 → 1
-      }
-
       if (i >= total) {
         el.classList.remove('typewriter');
         typingTimer = null;
-        if (onComplete) onComplete();
+        if (typeof onComplete === 'function') onComplete();
         return;
       }
-
+      const lastChar = text[i-1];
+      const prevThree = text.slice(Math.max(0, i-3), i);
       let delay = baseSpeed;
-      const lastChar = text[i - 1];
-      if (lastChar === '.' || lastChar === ',') delay *= 2;
+      if (prevThree === '...') delay = baseSpeed * 5;
+      else if (lastChar === '.' || lastChar === ',') delay = baseSpeed * 2;
 
       typingTimer = {
         el,
@@ -142,63 +393,320 @@ html,body{
     };
   }
 
-  function showContinueBelow() {
-    continueEl.classList.remove('hidden');
+  // Updated to fade in continue with animation class, and fade out correctly
+  function showContinueBelow(targetEl = null) {
+    if(!continueEl.classList.contains('hidden')) return; // avoid retrigger
+    continueEl.classList.remove('hidden', 'fade-out');
+    continueEl.setAttribute('aria-hidden','false');
+    continueEl.classList.add('fade-in');
+    requestAnimationFrame(() => {
+      const sRect = sceneEl.getBoundingClientRect();
+      let left = sRect.width / 2;
+      let top = sRect.height * 0.90;
+      if (targetEl) {
+        const r = targetEl.getBoundingClientRect();
+        left = (r.left + r.right) / 2 - sRect.left;
+        top = (r.bottom - sRect.top) + 32;
+      }
+      continueEl.style.left = left + 'px';
+      continueEl.style.top = top + 'px';
+      continueEl.style.transform = 'translate(-50%,0)';
+    });
   }
-
   function hideContinue() {
-    continueEl.classList.add('hidden');
+    if(continueEl.classList.contains('hidden') || continueEl.classList.contains('fade-out')) return;
+    continueEl.classList.remove('fade-in');
+    continueEl.classList.add('fade-out');
+    continueEl.setAttribute('aria-hidden','true');
+    setTimeout(() => {
+      continueEl.classList.add('hidden');
+      continueEl.classList.remove('fade-out');
+    }, 350);
   }
 
-  /* ─────────── SCENE 6 (ONLY MODIFIED SCENE) ─────────── */
+  function centerParchment() {
+    parchment.style.left = '50%';
+    parchment.style.top = '50%';
+  }
+
+  // Show parchment with optional typewriter text
+  function showParchment(text, sub = '', useTypewriter = false, speed = 36, popFadeIn = false) {
+    clearTyping();
+    pText.textContent = '';
+    pSub.textContent = '';
+    parchment.classList.remove('hidden');
+    parchment.setAttribute('aria-hidden','false');
+
+    requestAnimationFrame(() => {
+      if(popFadeIn) {
+        parchment.classList.add('parchment--visible', 'fade-in-pop');
+      } else {
+        parchment.classList.add('parchment--visible');
+      }
+      centerParchment();
+      if (useTypewriter) {
+        startTypewriter(text, pText, speed, () => {
+          pSub.textContent = sub;
+          showContinueBelow(parchment);
+        });
+      } else {
+        pText.textContent = text;
+        pSub.textContent = sub;
+        showContinueBelow(parchment);
+      }
+    });
+  }
+
+  function hideParchment() {
+    clearTyping();
+    parchment.classList.remove('parchment--visible', 'fade-in-pop');
+    parchment.setAttribute('aria-hidden','true');
+    setTimeout(() => parchment.classList.add('hidden'), 420);
+  }
+
+  function revealChoices() {
+    choices.classList.remove('hidden');
+    choices.setAttribute('aria-hidden','false');
+    const btns = Array.from(choices.children);
+    btns.forEach(b => { b.style.opacity = 0; b.style.transform = 'translateY(10px)'; });
+    requestAnimationFrame(() => {
+      btns.forEach((btn, i) => {
+        setTimeout(() => {
+          btn.style.opacity = 1;
+          btn.style.transform = 'translateY(0)';
+        }, i * 80);
+      });
+    });
+    hideContinue();
+  }
+
+  function hideChoices() {
+    const btns = Array.from(choices.children);
+    btns.forEach((btn, i) => {
+      setTimeout(() => {
+        btn.style.opacity = 0;
+        btn.style.transform = 'translateY(10px)';
+      }, i * 30);
+    });
+    setTimeout(() => choices.classList.add('hidden'), 220);
+  }
+
+  function crossfade(changeFn) {
+    const duration = 420;
+    visual.classList.add('fade-out');
+    visual.classList.remove('fade-in');
+    setTimeout(() => {
+      changeFn();
+      visual.classList.remove('fade-out');
+      visual.classList.add('fade-in');
+    }, duration);
+  }
+
+  // Scene 0: Knock on the door
+  function scene0() {
+    knockSfx.currentTime = 0;
+    knockSfx.play().catch(()=>{});
+    crossfade(() => {
+      visual.innerHTML = `<div class="plain-center text-reveal" id="knock-text">Someone knocks on your door...</div>`;
+      hideParchment();
+      hideChoices();
+      const tEl = document.getElementById('knock-text');
+      setTimeout(() => showContinueBelow(tEl), 420);
+    });
+  }
+
+  // Scene 1: They hand you a letter...
+  function scene1() {
+    crossfade(() => {
+      visual.innerHTML = `<div class="plain-center"><span id="letter-plain"></span></div>`;
+      hideParchment();
+      hideChoices();
+      const el = document.getElementById('letter-plain');
+      startTypewriter("They hand you a letter...", el, 40, () => {
+        sceneEl.classList.add('visible');
+        showContinueBelow(el);
+      });
+    });
+  }
+
+  // Scene 2: Show parchment with message - with pop fade in effect
+  function scene2() {
+    crossfade(() => {
+      visual.innerHTML = '';
+      hideChoices();
+
+      paperSfx.currentTime = 0;
+      paperSfx.play().catch(() => {});
+
+      showParchment(
+        "Greetings, brave and probably foolish adventurer! You have been chosen to embark on a perilous quest that will test your courage, wit, and sense of humour. The realm doesn't need heroes... but it does need some help.",
+        "– from the dungeon master",
+        false,
+        36,
+        true // popFadeIn enabled here
+      );
+    });
+  }
+
+  // Scene 3: Show choices Yes/No
+  function scene3() {
+    crossfade(() => {
+      hideParchment();
+      visual.innerHTML = '';
+      revealChoices();
+      const old = document.querySelector('.calltext');
+      if (old) old.remove();
+      const t = document.createElement('div');
+      t.className = 'calltext';
+      t.textContent = 'Will you heed the call?';
+      t.style.position = 'absolute';
+      t.style.left = '50%';
+      t.style.top = '65%';
+      t.style.transform = 'translate(-50%,-50%)';
+      t.style.color = 'var(--muted)';
+      t.style.fontWeight = 500;
+      t.style.fontSize = '.9rem';
+      t.style.pointerEvents = 'none';
+      sceneEl.appendChild(t);
+      hideContinue();
+    });
+  }
+
+  // Scene 6: Ending footsteps fade + message
   function scene6() {
-    visual.innerHTML = `<div class="plain-center"><span id="leave-text"></span></div>`;
-    const el = document.getElementById('leave-text');
+    crossfade(() => {
+      hideParchment();
+      visual.innerHTML = `<div class="plain-center"><span id="leave-text"></span></div>`;
+      const el = document.getElementById('leave-text');
 
-    stepsSfx.currentTime = 0;
-    stepsSfx.loop = false;
-    stepsSfx.volume = 0.5;
-    stepsSfx.play().catch(() => {});
+      try {
+        stepsSfx.currentTime = 0;
+        stepsSfx.volume = 0.8;
+        stepsSfx.play();
+      } catch (e) {}
 
-    startTypewriter(
-      "The strange person leaves...",
-      el,
-      48,
-      () => {
+      startTypewriter("The strange person leaves...", el, 48, () => showContinueBelow(el));
+      hideChoices();
+    });
+  }
+
+  // Fade out footsteps audio gradually
+  function fadeOutFootsteps() {
+    clearInterval(footstepsFadeInterval);
+    footstepsFadeInterval = setInterval(() => {
+      if (stepsSfx.volume > 0.02) {
+        stepsSfx.volume = Math.max(0, stepsSfx.volume - 0.02);
+      } else {
         stepsSfx.pause();
         stepsSfx.currentTime = 0;
-        showContinueBelow();
-      },
-      (progress) => {
-        // 🔥 Footsteps fade with text progress
-        stepsSfx.volume = Math.max(0, 0.5 * (1 - progress));
+        clearInterval(footstepsFadeInterval);
       }
-    );
+    }, 80);
   }
 
-  /* ─────────── BASIC FLOW (UNCHANGED STRUCTURE) ─────────── */
+  // End all sequences & fade overlay
+  function endSequence() {
+    fadeOutFootsteps();
+    overlay.style.transition = 'opacity .44s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 520);
+  }
+
+  // Handle advancing scenes or skipping typing
   function handleAdvance() {
     if (typingTimer) { clearTyping(true); return; }
-    if (scene === 0) { scene = 6; scene6(); }
-    else overlay.remove();
+    switch(scene) {
+      case 0: scene = 1; hideContinue(); scene1(); break;
+      case 1: scene = 2; hideContinue(); scene2(); break;
+      case 2: scene = 3; hideContinue(); scene3(); break;
+      case 3: /* wait for choice */ break;
+      case 4: case 5: scene = 6; hideContinue(); scene6(); break;
+      case 6: endSequence(); break;
+    }
   }
 
-  overlay.addEventListener('click', handleAdvance);
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') handleAdvance();
+  // Choices listeners
+  btnYes.addEventListener('click', (e) => {
+    e.stopPropagation();
+    pingSfx.currentTime = 0;
+    pingSfx.play().catch(() => {});
+    hideChoices();
+    document.querySelector('.calltext')?.remove();
+    showParchment(
+      "It's the beginning of a new time — full of mist and terror. And you... are about to become a part of it all. Good luck!",
+      "",
+      true,
+      40
+    );
+    scene = 4;
   });
 
-  document.getElementById('start-btn').onclick = () => {
-    document.getElementById('start-screen').style.display = 'none';
-    overlay.style.display = 'flex';
-    bgm.play().catch(()=>{});
-    scene = 0;
-    visual.textContent = "Someone knocks on your door...";
-    showContinueBelow();
-  };
+  btnNo.addEventListener('click', (e) => {
+    e.stopPropagation();
+    pingSfx.currentTime = 0;
+    pingSfx.play().catch(() => {});
+    thunderSfx.currentTime = 0;
+    thunderSfx.play().catch(() => {});
+    hideChoices();
+    document.querySelector('.calltext')?.remove();
+    showParchment(
+      "What a shame. Just when the world found its last hope... well... goodbye.",
+      "",
+      true,
+      48
+    );
+    scene = 5;
+  });
+
+  // Overlay click advances scene except buttons
+  overlay.addEventListener('click', (e) => {
+    if (e.target === btnYes || e.target === btnNo) return;
+    handleAdvance();
+  });
+
+  // Keyboard controls
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const active = document.activeElement;
+      if (!choices.classList.contains('hidden') && (active === btnYes || active === btnNo)) {
+        active.click();
+        e.preventDefault();
+        return;
+      }
+      handleAdvance();
+    } else if (e.key === 'Escape') {
+      endSequence();
+    }
+  });
+
+  continueEl.addEventListener('mouseenter', () => parchment.classList.add('halo-strong'));
+  continueEl.addEventListener('mouseleave', () => parchment.classList.remove('halo-strong'));
+
+  startBtn.addEventListener('click', () => {
+    startBtn.disabled = true;
+    startScreen.classList.add('fade-out');
+    
+    setTimeout(() => {
+      startScreen.style.display = 'none';
+      overlay.style.display = 'flex';
+      sceneEl.classList.add('visible');
+      bgm.muted = true;
+      bgm.play().then(() => {
+        setTimeout(() => {
+          bgm.muted = false;
+        }, 500);
+      }).catch(() => {});
+
+      scene = 0;
+      visual.classList.add('fade-in');
+      scene0();
+    }, 600);
+  });
 
 })();
 </script>
 
 </body>
 </html>
+
+
