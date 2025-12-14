@@ -119,7 +119,6 @@ button{font-family:inherit}
     0 0 8px var(--ember-mid),
     0 0 14px var(--ember-soft),
     0 0 22px var(--ember-falloff);
-}
   transition:
     opacity 0.45s ease, 
     transform 0.45s cubic-bezier(.2,.9,.2,1),
@@ -315,7 +314,6 @@ button{font-family:inherit}
 .rune-circle.fade-out { opacity: 0; transition: opacity 0.8s ease; }
 
 
-
 @keyframes flashRed {
   0% {
     color: var(--accent);
@@ -357,7 +355,6 @@ button{font-family:inherit}
 .rune-circle.flash-red .rune {
   animation: flashRed 0.2s ease-in-out 2; /* flashes 3 times */
 }
-
 </style>
 </head>
 <body>
@@ -572,8 +569,18 @@ button{font-family:inherit}
       }
     });
   }
+  function fadeOutParchment(callback) {
+  parchment.classList.add('parchment--reverse-pop');
+  parchment.classList.remove('parchment--visible', 'fade-in-pop');
+  parchment.setAttribute('aria-hidden', 'true');
+  setTimeout(() => {
+    parchment.classList.remove('parchment--reverse-pop');
+    parchment.classList.add('hidden');
+    if (callback) callback();
+  }, 450); // Match the existing reverse pop fade duration
+}
 
- function hideParchment(reversePop = false) {
+function hideParchment(reversePop = false) {
   clearTyping();
   if (reversePop) {
     parchment.classList.remove('parchment--visible', 'fade-in-pop');
@@ -698,23 +705,23 @@ button{font-family:inherit}
       hideContinue();
     });
   }
-  // Scene 4: Fate sealed text (plain, typewriter, no parchment)
-// Scene 4: Fate sealed text (advance on ANY click)
-function sceneFateSealed(nextCallback) {
-  lockAdvance = false;
+  // Scene 4: Fate sealed text (advance on ANY click)
+  // Scene 4: Fate sealed text (advance on ANY click)
+  function sceneFateSealed(nextCallback) {
+    lockAdvance = false;
 
-  crossfade(() => {
-    hideParchment();
-    visual.innerHTML = `<div class="plain-center" id="fate-text"></div>`;
-    const el = document.getElementById('fate-text');
+    crossfade(() => {
+      hideParchment();
+      visual.innerHTML = `<div class="plain-center" id="fate-text"></div>`;
+      const el = document.getElementById('fate-text');
 
-    // Start typewriter
-    startTypewriter("Your fate has been sealed.", el, 50, () => {
-      showContinueBelow(el);
-      // Jiggle Refuse button after fate text appears
-      btnNo.classList.add('jiggle');
+      // Start typewriter
+      startTypewriter("Your fate has been sealed.", el, 50, () => {
+        showContinueBelow(el);
+        // Jiggle Refuse button after fate text appears
+        btnNo.classList.add('jiggle');
+      });
     });
-  });
 
 const advanceOnce = () => {
   if (scene !== 4) return;
@@ -728,8 +735,8 @@ const advanceOnce = () => {
 };
 
 
-  overlay.addEventListener('click', advanceOnce);
-}
+    overlay.addEventListener('click', advanceOnce);
+  }
 
 
   // Scene 6: Ending footsteps fade + message
@@ -790,9 +797,21 @@ function scene7_diceEpilogue() {
     setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 520);
   }
 
+  // Fade out parchment helper for scene 5 transition
+  function fadeOutParchment(callback) {
+    parchment.classList.add('parchment--reverse-pop');
+    parchment.classList.remove('parchment--visible', 'fade-in-pop');
+    parchment.setAttribute('aria-hidden', 'true');
+    setTimeout(() => {
+      parchment.classList.remove('parchment--reverse-pop');
+      parchment.classList.add('hidden');
+      if (callback) callback();
+    }, 450); // match the fade duration
+  }
+
   // Handle advancing scenes or skipping typing
   function handleAdvance() {
-    if (lockAdvance) return; // ← ADD THIS
+    if (lockAdvance) return; 
     if (typingTimer) { clearTyping(true); return; }
   switch(scene) {
 
@@ -807,7 +826,14 @@ function scene7_diceEpilogue() {
 
     case 3: /* wait for choice */ break;
     case 4: /* fate-sealed, waiting for continue click, ignore overlay */ break;
-    case 5: scene = 6; hideContinue(); scene6(); break; // response done, go to ending
+    case 5: 
+      hideContinue();
+      // Fade out parchment before going to scene 6
+      fadeOutParchment(() => {
+        scene = 6;
+        scene6();
+      });
+      break;
     case 6:
      scene = 7;
      hideContinue();
