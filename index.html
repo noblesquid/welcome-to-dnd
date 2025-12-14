@@ -47,20 +47,21 @@ button{font-family:inherit}
 .scene{
   width:min(900px,92vw);
   height:min(560px,78vh);
-  border-radius:12px;
   position:relative;
   overflow:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
   padding:24px;
-  box-shadow:0 0 40px rgba(0,0,0,0.8)
+
+  /* REMOVE visual framing */
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+
   opacity: 0;
   pointer-events: none;
-  background: var(--bg-dark);
-  transition: opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1);
   transform: scale(0.95);
+  transition: opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1);
 }
+
 .scene.visible {
   opacity: 1;
   pointer-events: auto;
@@ -114,10 +115,11 @@ button{font-family:inherit}
   pointer-events:auto;
   text-align:center;
   box-shadow:
-    0 0 4px var(--ember-core),
-    0 0 10px var(--ember-mid),
-    0 0 18px var(--ember-soft),
-    0 0 30px var(--ember-falloff);
+    0 0 3px var(--ember-core),
+    0 0 8px var(--ember-mid),
+    0 0 14px var(--ember-soft),
+    0 0 22px var(--ember-falloff);
+}
   transition:
     opacity 0.45s ease, 
     transform 0.45s cubic-bezier(.2,.9,.2,1),
@@ -277,6 +279,85 @@ button{font-family:inherit}
 #start-screen button:hover {
   filter: brightness(1.1);
 }
+.rune-circle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  z-index: 1; /* behind parchment & text */
+}
+
+.rune-circle .rune {
+  position: absolute;
+  font-size: 2rem;
+  color: var(--accent);
+  text-shadow:
+    0 0 4px var(--ember-core),
+    0 0 10px var(--ember-mid),
+    0 0 16px var(--ember-soft);
+  opacity: 0.85;
+  animation: pulse 2s ease-in-out infinite alternate;
+}
+
+/* Glow pulse animation */
+@keyframes pulse {
+  0% { text-shadow: 0 0 4px var(--ember-core), 0 0 10px var(--ember-mid), 0 0 16px var(--ember-soft); transform: scale(1); }
+  50% { text-shadow: 0 0 12px var(--ember-core), 0 0 24px var(--ember-mid), 0 0 32px var(--ember-soft); transform: scale(1.05); }
+  100% { text-shadow: 0 0 4px var(--ember-core), 0 0 10px var(--ember-mid), 0 0 16px var(--ember-soft); transform: scale(1); }
+}
+
+/* Fade in/out helpers */
+.rune-circle.visible { opacity: 1; }
+.rune-circle.fade-out { opacity: 0; transition: opacity 0.8s ease; }
+
+
+
+@keyframes flashRed {
+  0% {
+    color: var(--accent);
+    text-shadow:
+      0 0 4px var(--ember-core),
+      0 0 10px var(--ember-mid),
+      0 0 16px var(--ember-soft);
+    opacity: 0.85;
+  }
+
+  40% {
+    color: rgb(255, 120, 120); /* ember-red, not pure red */
+    text-shadow:
+      0 0 8px rgba(255, 80, 80, 0.55),
+      0 0 18px rgba(255, 60, 60, 0.45),
+      0 0 28px rgba(180, 40, 40, 0.35);
+    opacity: 1;
+  }
+
+  60% {
+    color: rgb(255, 140, 140);
+    text-shadow:
+      0 0 6px rgba(255, 90, 90, 0.45),
+      0 0 14px rgba(255, 70, 70, 0.35),
+      0 0 22px rgba(160, 40, 40, 0.25);
+  }
+
+  100% {
+    color: var(--accent);
+    text-shadow:
+      0 0 4px var(--ember-core),
+      0 0 10px var(--ember-mid),
+      0 0 16px var(--ember-soft);
+    opacity: 0.85;
+  }
+}
+
+
+.rune-circle.flash-red .rune {
+  animation: flashRed 0.2s ease-in-out 2; /* flashes 3 times */
+}
+
 </style>
 </head>
 <body>
@@ -300,6 +381,7 @@ button{font-family:inherit}
     <div class="visual-wrap">
       <div id="visual" class="visual fade-in" aria-live="polite"></div>
     </div>
+    <div id="rune-circle" class="rune-circle" aria-hidden="true"></div>
 
     <div id="parchment" class="parchment" aria-hidden="true" role="document">
       <div id="parchment-text" class="parchment-text"></div>
@@ -619,32 +701,36 @@ button{font-family:inherit}
   // Scene 4: Fate sealed text (plain, typewriter, no parchment)
 // Scene 4: Fate sealed text (advance on ANY click)
 function sceneFateSealed(nextCallback) {
-  lockAdvance = false; // ✅ allow overlay clicks
+  lockAdvance = false;
 
   crossfade(() => {
     hideParchment();
     visual.innerHTML = `<div class="plain-center" id="fate-text"></div>`;
     const el = document.getElementById('fate-text');
 
+    // Start typewriter
     startTypewriter("Your fate has been sealed.", el, 50, () => {
-      showContinueBelow(el); // optional visual hint
+      showContinueBelow(el);
+      // Jiggle Refuse button after fate text appears
+      btnNo.classList.add('jiggle');
     });
   });
 
-  // One-time advance handler
-  const advanceOnce = () => {
-    if (scene !== 4) return; // safety
-    hideContinue();
-    overlay.removeEventListener('click', advanceOnce);
+const advanceOnce = () => {
+  if (scene !== 4) return;
+  hideContinue();
+  btnNo.classList.remove('jiggle', 'jiggle-strong'); // stop jiggle
+  overlay.removeEventListener('click', advanceOnce);
 
-    if (typeof nextCallback === 'function') {
-      nextCallback();
-    }
-  };
+  if (typeof nextCallback === 'function') {
+    nextCallback();
+  }
+};
 
-  // Listen for ANY click on overlay
+
   overlay.addEventListener('click', advanceOnce);
 }
+
 
   // Scene 6: Ending footsteps fade + message
   function scene6() {
@@ -733,6 +819,44 @@ function scene7_diceEpilogue() {
     break;
   }
 }
+// Rune circle helper
+function createRuneCircle() {
+  const runeContainer = document.getElementById('rune-circle');
+  runeContainer.innerHTML = ''; // clear previous runes
+
+  const runes = ['ᚠ','ᚢ','ᚦ','ᚩ','ᚱ','ᚳ','ᚷ','ᚹ','ᚺ','ᚾ','ᛁ','ᛃ']; // example runes
+  const radius = Math.min(sceneEl.clientWidth, sceneEl.clientHeight) / 2 - 40;
+
+  runes.forEach((rune, i) => {
+    const angle = (i / runes.length) * 2 * Math.PI;
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+
+    const span = document.createElement('span');
+    span.className = 'rune';
+    span.textContent = rune;
+    span.style.left = `calc(50% + ${x}px)`;
+    span.style.top = `calc(50% + ${y}px)`;
+
+    runeContainer.appendChild(span);
+  });
+
+  // Fade in
+  requestAnimationFrame(() => {
+    runeContainer.classList.add('visible');
+  });
+}
+
+// Fade out rune circle
+function fadeOutRuneCircle() {
+  const runeContainer = document.getElementById('rune-circle');
+  runeContainer.classList.remove('visible');
+  runeContainer.classList.add('fade-out');
+  setTimeout(() => {
+    runeContainer.classList.remove('fade-out');
+    runeContainer.innerHTML = '';
+  }, 800); // match CSS transition
+}
 
 
   // Choices listeners
@@ -743,10 +867,11 @@ btnYes.addEventListener('click', (e) => {
   hideChoices();
   document.querySelector('.calltext')?.remove();
 
-  // Start with fate-sealed scene
+  createRuneCircle(); // <--- show rune circle here
+
   scene = 4; // fate-sealed
   sceneFateSealed(() => {
-    // After clicking continue, show original response
+    fadeOutRuneCircle(); // <--- fade out after text types
     scene = 5; // Yes response
     showParchment(
       "It's the beginning of a new time — full of mist and terror. And you... are about to become a part of it all. Good luck!",
@@ -766,9 +891,17 @@ btnNo.addEventListener('click', (e) => {
   hideChoices();
   document.querySelector('.calltext')?.remove();
 
+  createRuneCircle(); // show rune circle
+
+  // Flash red effect
+  const runeCircle = document.getElementById('rune-circle');
+  runeCircle.classList.add('flash-red');
+  setTimeout(() => runeCircle.classList.remove('flash-red'), 1000); // remove after animation
+
   scene = 4; // fate-sealed
   sceneFateSealed(() => {
-    scene = 5; // No response (rename index if needed)
+    fadeOutRuneCircle(); // fade out after text types
+    scene = 5; // No response
     showParchment(
       "What a shame. Just when the world found its last hope... well... goodbye.",
       "",
@@ -777,6 +910,7 @@ btnNo.addEventListener('click', (e) => {
     );
   });
 });
+
 
   // Overlay click advances scene except buttons
   overlay.addEventListener('click', (e) => {
@@ -829,4 +963,3 @@ btnNo.addEventListener('click', (e) => {
 
 </body>
 </html>
-
