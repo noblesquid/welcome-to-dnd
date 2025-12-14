@@ -708,7 +708,7 @@ function hideParchment(reversePop = false) {
   // Scene 4: Fate sealed text (advance on ANY click)
   // Scene 4: Fate sealed text (advance on ANY click)
   function sceneFateSealed(nextCallback) {
-    lockAdvance = false;
+     lockAdvance = true; // 🔒 lock global advancing during fate scene
 
     crossfade(() => {
       hideParchment();
@@ -725,16 +725,20 @@ function hideParchment(reversePop = false) {
 
 const advanceOnce = () => {
   if (scene !== 4) return;
+
+  lockAdvance = false;
   hideContinue();
-  btnNo.classList.remove('jiggle', 'jiggle-strong'); // stop jiggle
+  btnNo.classList.remove('jiggle', 'jiggle-strong');
+
+  // 🔥 HARD CLEAR THE FATE TEXT BEFORE LEAVING SCENE 4
+  visual.innerHTML = '';
+
   overlay.removeEventListener('click', advanceOnce);
 
   if (typeof nextCallback === 'function') {
     nextCallback();
   }
 };
-
-
     overlay.addEventListener('click', advanceOnce);
   }
 
