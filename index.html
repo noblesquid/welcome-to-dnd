@@ -464,7 +464,7 @@ button{font-family:inherit}
       const prevThree = text.slice(Math.max(0, i-3), i);
       let delay = baseSpeed;
       if (prevThree === '...') delay = baseSpeed * 5;
-      else if (lastChar === '.' || lastChar === ',') delay = baseSpeed * 2;
+      else if (lastChar === '.' || lastChar === ',') delay = baseSpeed * 4;
 
       typingTimer = {
         el,
@@ -785,9 +785,63 @@ function scene7_diceEpilogue() {
           visual.classList.add('fade-out');
 
           setTimeout(() => {
-            endSequence();
-          }, 600); // allow fade-out to finish
+  scene = 8;
+  scene8_waitingPrompt();
+}, 600);
+
         }, 3000);
+      }
+    );
+  });
+}
+// Scene 8: First prompt after dice epilogue
+function scene8_waitingPrompt() {
+  crossfade(() => {
+    visual.innerHTML = `<div class="plain-center" id="waiting-text"></div>`;
+    const el = document.getElementById('waiting-text');
+
+    // Wait 6 seconds before typing
+    setTimeout(() => {
+      startTypewriter(
+        "what... what are your still wating for?",
+        el,
+        60,
+        () => {
+          // Fade out after 1 second
+          setTimeout(() => {
+            visual.classList.add('fade-out');
+
+            setTimeout(() => {
+              visual.classList.remove('fade-out');
+              scene = 9;
+              scene9_adventurePrompt();
+            }, 600);
+          }, 1000);
+        }
+      );
+    }, 6000);
+  });
+}
+
+// Scene 9: Final call to action
+function scene9_adventurePrompt() {
+  crossfade(() => {
+    visual.innerHTML = `<div class="plain-center" id="adventure-text"></div>`;
+    const el = document.getElementById('adventure-text');
+
+    startTypewriter(
+      "your adventure is waiting, so go already!",
+      el,
+      55,
+      () => {
+        // Fade out after 1 second
+        setTimeout(() => {
+          visual.classList.add('fade-out');
+
+          setTimeout(() => {
+            endSequence();
+          }, 600);
+        }, 1000);
       }
     );
   });
@@ -845,8 +899,11 @@ function scene7_diceEpilogue() {
      break;
 
     case 7:
-    // Do nothing — auto-fades and ends
-    break;
+case 8:
+case 9:
+  // Do nothing — auto-controlled scenes
+  break;
+
   }
 }
 // Rune circle helper
@@ -993,5 +1050,4 @@ btnNo.addEventListener('click', (e) => {
 
 </body>
 </html>
-
 
