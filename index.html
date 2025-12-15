@@ -912,7 +912,9 @@ function scene11_sevenGods() {
           visual.classList.add('fade-out');
 
           setTimeout(() => {
-            endSequence();
+           scene = 12;
+scene12_thatsIt();
+
           }, 600);
         }, 1000);
       }
@@ -920,6 +922,63 @@ function scene11_sevenGods() {
   });
 }
 
+// Scene 12: "that's it"
+function scene12_thatsIt() {
+  crossfade(() => {
+    visual.innerHTML = `<div class="plain-center" id="thats-it-text"></div>`;
+    const el = document.getElementById('thats-it-text');
+
+    // Wait 8 seconds before appearing
+    setTimeout(() => {
+      startTypewriter(
+        "that's it",
+        el,
+        70,
+        () => {
+          // Fade out after 1 second
+          setTimeout(() => {
+            visual.classList.add('fade-out');
+
+            setTimeout(() => {
+              visual.classList.remove('fade-out');
+              scene = 13;
+              scene13_beGone();
+            }, 600);
+          }, 1000);
+        }
+      );
+    }, 8000);
+  });
+}
+
+// Scene 13: BE GONE YOU FOUL BEAST!
+function scene13_beGone() {
+  crossfade(() => {
+    visual.innerHTML = `<div class="plain-center" id="begone-text"></div>`;
+    const el = document.getElementById('begone-text');
+
+    const fullText = "BE GONE YOU FOUL BEAST!";
+
+    startTypewriter(
+      fullText,
+      el,
+      45,
+      () => {
+        // Apply tremble to the whole line after typing
+        el.innerHTML = `<span class="tremble">${fullText}</span>`;
+
+        // Fade out after 2 seconds
+        setTimeout(() => {
+          visual.classList.add('fade-out');
+
+          setTimeout(() => {
+            endSequence();
+          }, 600);
+        }, 2000);
+      }
+    );
+  });
+}
 
 
   // End all sequences & fade overlay
@@ -978,8 +1037,11 @@ case 8:
 case 9:
 case 10:
 case 11:
-  // Auto-timed scenes, no manual advance
+case 12:
+case 13:
+  // Fully automatic scenes
   break;
+
   }
 }
 // Rune circle helper
@@ -1126,5 +1188,4 @@ btnNo.addEventListener('click', (e) => {
 
 </body>
 </html>
-
 
