@@ -385,6 +385,7 @@ button{font-family:inherit}
 <audio id="thunder-sfx" src="sound/thunder-sfx.mp3" preload="auto"></audio>
 <audio id="steps-sfx" src="sound/steps-sfx.mp3" preload="auto"></audio>
 <audio id="eerie-sfx" src="sound/eerie-sfx.mp3" preload="auto"></audio>
+<audio id="thunder2-sfx" src="sound/thunder2.mp3" preload="auto"></audio>
 
 <div id="inv-overlay" class="overlay" style="display:none;">
   <div id="scene" class="scene" role="dialog" aria-modal="true" aria-label="Dungeons &amp; Dragons Invitation">
@@ -429,6 +430,8 @@ button{font-family:inherit}
   const thunderSfx = document.getElementById("thunder-sfx");
   const stepsSfx = document.getElementById("steps-sfx");
   const eerieSfx = document.getElementById("eerie-sfx");
+ const thunder2Sfx = document.getElementById("thunder2-sfx");
+if (thunder2Sfx) thunder2Sfx.volume = 0.8;
 
   bgm.volume = 0.60;
   knockSfx.volume = 0.40;
@@ -959,6 +962,10 @@ function scene13_beGone() {
 
     const fullText = "BE GONE YOU FOUL BEAST!";
 
+    // 🔊 THUNDER HIT
+    thunder2Sfx.currentTime = 0;
+    thunder2Sfx.play().catch(() => {});
+
     startTypewriter(
       fullText,
       el,
@@ -979,7 +986,6 @@ function scene13_beGone() {
     );
   });
 }
-
 
   // End all sequences & fade overlay
   function endSequence() {
